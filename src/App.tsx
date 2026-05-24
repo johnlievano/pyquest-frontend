@@ -11,7 +11,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/unidades/:unidadId/ejercicios/:ejercicioId" element={<EntornoCodigo />} />
+      <Route path="/ejercicios/:ejercicioId" element={<EntornoCodigo />} />
     </Routes>
   );
 }
