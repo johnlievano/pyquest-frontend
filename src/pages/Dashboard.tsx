@@ -395,120 +395,89 @@ export default function Dashboard() {
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 80% 20%,rgba(100,30,180,0.07) 0%,transparent 55%)' }} />
       </div>
 
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-64 flex flex-col z-20"
-        style={{ background: 'rgba(5,8,18,0.9)', backdropFilter: 'blur(20px)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+      {/* Navbar top */}
+      <nav className="sticky top-0 z-20 flex items-center justify-between px-8 py-3"
+        style={{ background: 'rgba(5,8,18,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
 
         {/* Logo */}
-        <div className="flex items-center gap-3 p-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="flex items-center gap-3">
           <div className="relative">
             <div className="absolute inset-0 rounded-xl blur-md" style={{ background: 'rgba(59,130,246,0.4)' }} />
-            <div className="relative w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)' }}>
-              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <div className="relative w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)' }}>
+              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
               </svg>
             </div>
           </div>
-          <div>
-            <span className="text-white font-black text-lg tracking-widest">PyQuest</span>
-            <p className="text-xs" style={{ color: 'rgba(160,185,255,0.45)' }}>Aprendé Python</p>
-          </div>
+          <span className="text-white font-black text-lg tracking-widest">PyQuest</span>
         </div>
 
-        {/* Card usuario */}
-        <div className="mx-4 mt-5 p-4 rounded-2xl" style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.12),rgba(99,102,241,0.12))', border: '1px solid rgba(99,102,241,0.2)' }}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg,#f59e0b,#ef4444)', boxShadow: '0 4px 12px rgba(245,158,11,0.3)' }}>
-              🚀
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'rgba(160,185,255,0.5)' }}>
-                Nivel {nivel} · {getNombreNivel(nivel)}
-              </p>
-              <p className="text-sm font-bold text-white truncate">{usuario?.nombre ?? '...'}</p>
-            </div>
-          </div>
-          <div className="flex justify-between text-xs mb-1" style={{ color: 'rgba(160,185,255,0.5)' }}>
-            <span>{experiencia} XP</span><span>{xpParaSiguiente} XP</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-            <div className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${xpPorcentaje}%`, background: 'linear-gradient(90deg,#f59e0b,#f97316)', boxShadow: '0 0 8px rgba(245,158,11,0.6)' }} />
-          </div>
-          <p className="text-xs mt-2" style={{ color: 'rgba(245,158,11,0.7)' }}>
-            ⚡ {xpParaSiguiente - experiencia} XP para nivel {nivel + 1}
-          </p>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex flex-col gap-1 p-4 mt-2 flex-1">
+        {/* Tabs centro */}
+        <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
           {[
             { id: 'modulos', label: 'Módulos', icon: Icon.Map },
             { id: 'perfil',  label: 'Mi Perfil', icon: Icon.User },
           ].map(item => (
             <button key={item.id}
               onClick={() => setTabActiva(item.id as typeof tabActiva)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-left"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
               style={{
-                background: tabActiva === item.id ? 'rgba(59,130,246,0.12)' : 'transparent',
-                color: tabActiva === item.id ? '#60a5fa' : 'rgba(160,185,255,0.55)',
-                border: tabActiva === item.id ? '1px solid rgba(59,130,246,0.2)' : '1px solid transparent',
+                background: tabActiva === item.id ? 'rgba(59,130,246,0.2)' : 'transparent',
+                color: tabActiva === item.id ? '#60a5fa' : 'rgba(160,185,255,0.5)',
+                border: tabActiva === item.id ? '1px solid rgba(59,130,246,0.3)' : '1px solid transparent',
               }}>
               <div className="w-4 h-4 shrink-0"><item.icon /></div>
               {item.label}
             </button>
           ))}
-        </nav>
+        </div>
 
-        {/* Racha + Logout */}
-        <div className="p-4 space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
-            style={{ background: racha > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${racha > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)'}` }}>
-            <div className="w-4 h-4" style={{ color: racha > 0 ? '#f97316' : 'rgba(160,185,255,0.3)' }}><Icon.Fire /></div>
-            <span className="text-sm font-bold" style={{ color: racha > 0 ? '#fb923c' : 'rgba(160,185,255,0.4)' }}>
-              {racha > 0 ? `${racha} días seguidos` : 'Sin racha aún'}
-            </span>
+        {/* Info usuario derecha */}
+        <div className="flex items-center gap-3">
+          {/* Pts */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+            style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)' }}>
+            <div className="w-3.5 h-3.5" style={{ color: '#f59e0b' }}><Icon.Star /></div>
+            <span className="text-xs font-bold" style={{ color: '#f59e0b' }}>{experiencia} pts</span>
           </div>
+          {/* Completados */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="w-3.5 h-3.5" style={{ color: '#10b981' }}><Icon.Check /></div>
+            <span className="text-xs font-bold text-white">{totalCompletados}/{totalEjercicios}</span>
+          </div>
+          {/* Racha */}
+          {racha > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <div className="w-3.5 h-3.5" style={{ color: '#f97316' }}><Icon.Fire /></div>
+              <span className="text-xs font-bold" style={{ color: '#fb923c' }}>{racha} días</span>
+            </div>
+          )}
+          {/* Usuario */}
+          <div className="flex items-center gap-2 pl-3" style={{ borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
+              style={{ background: 'linear-gradient(135deg,#f59e0b,#ef4444)' }}>🚀</div>
+            <div>
+              <p className="text-xs font-bold text-white leading-none">{usuario?.nombre?.split(' ')[0] ?? '...'}</p>
+              <p className="text-xs" style={{ color: 'rgba(160,185,255,0.4)' }}>Nv. {nivel}</p>
+            </div>
+          </div>
+          {/* Logout */}
           <button
             onClick={() => { localStorage.removeItem('accessToken'); navigate('/login'); }}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm w-full transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
             style={{ color: 'rgba(160,185,255,0.4)' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(160,185,255,0.4)')}>
-            <div className="w-4 h-4 shrink-0"><Icon.Logout /></div>
-            Cerrar sesión
+            <div className="w-4 h-4"><Icon.Logout /></div>
           </button>
         </div>
-      </aside>
+      </nav>
 
-      {/* Main */}
-      <main className="ml-64 min-h-screen">
-        {/* Header */}
-        <div className="flex items-center justify-between px-8 py-4"
-          style={{ background: 'rgba(5,8,18,0.85)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <div>
-            <h1 className="text-xl font-black text-white">
-              {tabActiva === 'modulos' ? 'Módulos de Python' : 'Mi Perfil'}
-            </h1>
-            <p className="text-xs" style={{ color: 'rgba(160,185,255,0.45)' }}>
-              {totalCompletados} de {totalEjercicios} ejercicios completados · {porcentajeGlobal}% total
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <div className="w-3.5 h-3.5" style={{ color: '#f59e0b' }}><Icon.Star /></div>
-              <span className="text-xs font-bold text-white">{experiencia} XP</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <div className="w-3.5 h-3.5" style={{ color: '#10b981' }}><Icon.Check /></div>
-              <span className="text-xs font-bold text-white">{totalCompletados}/{totalEjercicios}</span>
-            </div>
-          </div>
-        </div>
+      {/* Main full width */}
+      <main className="w-full">
 
         {/* Tab: Módulos */}
         {tabActiva === 'modulos' && (
@@ -591,7 +560,7 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-2 gap-3 mb-4">
                 {[
-                  { label: 'XP Total',               val: `${experiencia.toLocaleString()} XP`, color: '#f59e0b' },
+                  { label: 'Puntos Total',              val: `${experiencia.toLocaleString()} pts`, color: '#f59e0b' },
                   { label: 'Ejercicios completados',  val: `${totalCompletados}/${totalEjercicios}`, color: '#10b981' },
                   { label: 'Racha actual',            val: racha > 0 ? `${racha} días 🔥` : 'Sin racha', color: racha > 0 ? '#ef4444' : 'rgba(160,185,255,0.4)' },
                   { label: 'Progreso global',         val: `${porcentajeGlobal}%`, color: '#3b82f6' },
@@ -606,15 +575,15 @@ export default function Dashboard() {
               {/* Barra XP */}
               <div className="p-3 rounded-xl mb-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div className="flex justify-between text-xs mb-2" style={{ color: 'rgba(160,185,255,0.5)' }}>
-                  <span>Nivel {nivel} — {experiencia} XP</span>
-                  <span>Nivel {nivel + 1} — {xpParaSiguiente} XP</span>
+                  <span>Nivel {nivel} — {experiencia} pts</span>
+                  <span>Nivel {nivel + 1} — {xpParaSiguiente} pts</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <div className="h-full rounded-full"
                     style={{ width: `${xpPorcentaje}%`, background: 'linear-gradient(90deg,#f59e0b,#f97316)', boxShadow: '0 0 8px rgba(245,158,11,0.4)', transition: 'width 0.7s ease' }} />
                 </div>
                 <p className="text-xs mt-2 text-center" style={{ color: 'rgba(245,158,11,0.6)' }}>
-                  ⚡ {xpParaSiguiente - experiencia} XP para el siguiente nivel
+                  ⚡ {xpParaSiguiente - experiencia} pts para el siguiente nivel
                 </p>
               </div>
 
