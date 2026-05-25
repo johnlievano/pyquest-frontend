@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { BadgeStat } from "@/components/ui/badge-stat";
+import { Link } from 'react-router-dom';
+import { BadgeStat } from "../ui/badge-stat";
 
 // Props para el encabezado principal de la práctica.
 interface PracticeHeaderProps {
@@ -37,7 +37,7 @@ export function PracticeHeader({
 
         {/* Botón para regresar al inicio */}
         <Link
-          href="/"
+          to="/"
           className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-blue-400 hover:text-white"
         >
           Inicio
