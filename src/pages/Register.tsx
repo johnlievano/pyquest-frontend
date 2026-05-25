@@ -390,31 +390,7 @@ export default function Register() {
             </form>
 
             {/* OAuth */}
-            <div className="mt-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex-1 h-px" style={{ background: "rgba(140,100,220,0.15)" }} />
-                <span className="text-xs" style={{ color: "rgba(190,170,255,0.4)" }}>O continúa con</span>
-                <div className="flex-1 h-px" style={{ background: "rgba(140,100,220,0.15)" }} />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { icon: <IcoGoogle />,   label: "Google",   hoverBg: "rgba(234,67,53,0.1)",  hoverBorder: "rgba(234,67,53,0.35)" },
-                  { icon: <IcoFacebook />, label: "Facebook", hoverBg: "rgba(24,119,242,0.1)", hoverBorder: "rgba(24,119,242,0.35)" },
-                ].map(({ icon, label, hoverBg, hoverBorder }) => (
-                  <button key={label}
-                    className="flex items-center justify-center gap-2 text-xs font-semibold transition-all duration-150"
-                    style={{ padding: "0.55rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(140,100,220,0.18)", color: "rgba(210,200,255,0.8)" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; (e.currentTarget as HTMLButtonElement).style.borderColor = hoverBorder; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(140,100,220,0.18)"; }}>
-                    {icon}{label}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-3 text-center" style={{ fontSize: "0.7rem", color: "rgba(160,145,200,0.45)" }}>
-                Al registrarte aceptas nuestros{" "}
-                <span className="underline cursor-pointer" style={{ color: "rgba(167,139,250,0.7)" }}>Términos y Condiciones</span>
-              </p>
-            </div>
+            
           </div>
         </div>
 

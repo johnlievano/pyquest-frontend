@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 1. Instancia base
 const apiClient = axios.create({
-  baseURL: 'https://pyquest-backend.fly.dev/api',
+  baseURL: 'https://pyquest-backend.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },

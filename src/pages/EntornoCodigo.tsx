@@ -41,47 +41,57 @@ function getEjerciciosDesbloqueados(
   return desbloqueados;
 }
 
-// ── Pistas por ejercicio (guían sin dar la respuesta) ────────
+// ── Pistas por ejercicio ──────────────────────────────────────
 const PISTAS: Record<number, string[]> = {
   1: [
-    'Python tiene una función llamada print() que muestra texto en pantalla. Intentá escribirla.',
-    'La función print() necesita el texto entre paréntesis y entre comillas. Fijate bien en las mayúsculas del texto pedido.',
+    'Usá la función print() con el texto entre comillas.',
+    'El texto debe ser exactamente: Hola Mundo (con mayúsculas).',
+    'Solución: print("Hola Mundo")',
   ],
   2: [
-    'En Python guardás un valor en una variable usando el signo =. El nombre de la variable va a la izquierda.',
-    'Para sumar dos números usás el operador +. Combiná eso con el nombre de variable exacto que se pide.',
+    'Creá una variable con el signo igual: resultado = ...',
+    'Podés sumar directamente: resultado = 5 + 3',
+    'El nombre de la variable debe ser exactamente "resultado".',
   ],
   3: [
-    'Python tiene una función len() que cuenta cuántos elementos tiene una lista. ¿Cómo la combinarías con print()?',
-    'Podés anidar funciones: poné len() adentro de print(). El argumento de len() es la lista que ya existe en el enunciado.',
+    'La función len() cuenta los elementos de una lista.',
+    'Combiná print() y len(): print(len(numeros))',
+    'Solución: print(len(numeros))  → muestra 5',
   ],
   4: [
-    'Un if en Python termina con dos puntos (:) y el código adentro va indentado con 4 espacios.',
-    'Pensá en el operador de comparación para saber si un número es mayor que otro, y qué texto exacto hay que imprimir.',
+    'La estructura es: if condicion:  (con los dos puntos al final)',
+    'Dentro del if, el print va indentado con 4 espacios.',
+    'Solución:\nif x > 10:\n    print("mayor")',
   ],
   5: [
-    'range(inicio, fin) genera números desde inicio hasta fin-1. ¿Qué valores necesitás para obtener del 1 al 5?',
-    'La estructura del for es: for variable in algo: — y adentro, con indentación, va lo que querés hacer con cada número.',
+    'range(1, 6) genera los números 1, 2, 3, 4, 5.',
+    'La estructura del for es: for variable in range(...):',
+    'Solución:\nfor i in range(1, 6):\n    print(i)',
   ],
   6: [
-    'Para definir una función usás def seguido del nombre y los parámetros entre paréntesis. ¿Qué parámetro recibe esta función?',
-    'Dentro de la función usás return para devolver un valor. En Python podés unir dos strings con el operador +.',
+    'Definí la función con: def saludar(nombre):',
+    'Usá return para devolver el resultado.',
+    'Solución:\ndef saludar(nombre):\n    return "Hola, " + nombre',
   ],
   7: [
-    'Un diccionario en Python se crea con llaves {}. Cada entrada va como "clave": valor y se separan con coma.',
-    'Pensá qué claves se piden en el enunciado y qué tipo de valor tendría cada una. Podés usar cualquier valor.',
+    'Un diccionario usa llaves {}: {"clave": valor}',
+    'Separás los pares clave-valor con coma.',
+    'Solución:\npersona = {"nombre": "Ana", "edad": 25}',
   ],
   8: [
-    'Un bloque try/except captura errores. El código que puede fallar va en el try, y la respuesta al error va en el except.',
-    'Cada tipo de error en Python tiene un nombre. El que ocurre al dividir por cero tiene uno específico — buscalo en el enunciado.',
+    'La estructura es try: ... except TipoError:',
+    'El error que hay que capturar es ZeroDivisionError.',
+    'Solución:\ntry:\n    10/0\nexcept ZeroDivisionError:\n    print("Error: división por cero")',
   ],
   9: [
-    'Una list comprehension crea una lista aplicando una expresión a cada elemento. La sintaxis es [expresión for variable in iterable].',
-    'Para elevar al cuadrado en Python usás **2. Pensá qué rango de números necesitás y cómo generarlos con range().',
+    'La sintaxis es: [expresion for variable in iterable]',
+    'Para elevar al cuadrado usás: x**2',
+    'Solución: [x**2 for x in range(1, 6)]',
   ],
   10: [
-    'Una clase en Python se define con class NombreClase: y el método __init__ se ejecuta automáticamente al crear un objeto.',
-    '__init__ siempre recibe self como primer parámetro (representa la instancia). Los demás parámetros son los datos que querés guardar como atributos.',
+    'Definí la clase con: class Animal:',
+    'El __init__ siempre recibe self como primer parámetro.',
+    'Solución:\nclass Animal:\n    def __init__(self, nombre):\n        self.nombre = nombre',
   ],
 };
 
@@ -236,7 +246,7 @@ export default function EntornoCodigo() {
   }, [codigo, ejercicio, fase, id, usuario, yaCompletado]);
 
   const navegarEjercicio = (dir: 'anterior' | 'siguiente') => {
-    const lista = todosEjercicios.filter(e => e.dificultad === ejercicio.dificultad);
+    const lista = getEjerciciosDesbloqueados(todosEjercicios, completadosIds);
     const idx = lista.findIndex(e => e.idEjercicio === id);
     const nuevoIdx = dir === 'anterior' ? idx - 1 : idx + 1;
     if (nuevoIdx >= 0 && nuevoIdx < lista.length) {
@@ -266,8 +276,7 @@ export default function EntornoCodigo() {
 
   const cat = colorCategoria(ejercicio.categoria);
   const dif = colorDificultad(ejercicio.dificultad);
-  // Navegación solo dentro del módulo actual (misma dificultad)
-  const ejerciciosNavegables = todosEjercicios.filter(e => e.dificultad === ejercicio.dificultad);
+  const ejerciciosNavegables = getEjerciciosDesbloqueados(todosEjercicios, completadosIds);
   const idxActual = ejerciciosNavegables.findIndex(e => e.idEjercicio === id);
   const terminalColor = fase === 'ok' ? '#10b981' : fase === 'error' ? '#f87171' : '#34d399';
 
