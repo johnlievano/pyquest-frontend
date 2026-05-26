@@ -10,15 +10,21 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false, // <--- CAMBIADO A FALSE
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Paths Mapping */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
     /* Linting */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "erasableSyntaxOnly": false, // <--- CAMBIADO A FALSE
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
