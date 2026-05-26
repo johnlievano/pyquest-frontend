@@ -9,6 +9,7 @@ import {
   mapDificultad,
 } from '../services/ejercicios.service';
 import { progresoService } from '../services/progreso.service';
+import apiClient from '../lib/axios';
 
 function getUserFromToken(): { idUsuario: number } | null {
   try {
@@ -21,10 +22,8 @@ function getUserFromToken(): { idUsuario: number } | null {
 
 type Fase = 'idle' | 'ejecutando' | 'validando' | 'ok' | 'error';
 
-// Módulos y su dificultad — misma lógica que Dashboard
 const MODULOS_DIFICULTAD = ['BAJO', 'MEDIO', 'ALTO'] as const;
 
-// Dado todos los ejercicios y los completados, devuelve solo los desbloqueados
 function getEjerciciosDesbloqueados(
   todos: EjercicioBackend[],
   completadosIds: Set<number>
@@ -34,77 +33,22 @@ function getEjerciciosDesbloqueados(
   for (let i = 0; i < porModulo.length; i++) {
     const modulo = porModulo[i];
     desbloqueados.push(...modulo);
-    // Si no están todos completados, no se desbloquea el siguiente
-    const todosCompletos = modulo.every(e => completadosIds.has(e.idEjercicio));
-    if (!todosCompletos) break;
+    if (!modulo.every(e => completadosIds.has(e.idEjercicio))) break;
   }
   return desbloqueados;
 }
 
-// ── Pistas por ejercicio ──────────────────────────────────────
-const PISTAS: Record<number, string[]> = {
-  1: [
-    'Usá la función print() con el texto entre comillas.',
-    'El texto debe ser exactamente: Hola Mundo (con mayúsculas).',
-    'Solución: print("Hola Mundo")',
-  ],
-  2: [
-    'Creá una variable con el signo igual: resultado = ...',
-    'Podés sumar directamente: resultado = 5 + 3',
-    'El nombre de la variable debe ser exactamente "resultado".',
-  ],
-  3: [
-    'La función len() cuenta los elementos de una lista.',
-    'Combiná print() y len(): print(len(numeros))',
-    'Solución: print(len(numeros))  → muestra 5',
-  ],
-  4: [
-    'La estructura es: if condicion:  (con los dos puntos al final)',
-    'Dentro del if, el print va indentado con 4 espacios.',
-    'Solución:\nif x > 10:\n    print("mayor")',
-  ],
-  5: [
-    'range(1, 6) genera los números 1, 2, 3, 4, 5.',
-    'La estructura del for es: for variable in range(...):',
-    'Solución:\nfor i in range(1, 6):\n    print(i)',
-  ],
-  6: [
-    'Definí la función con: def saludar(nombre):',
-    'Usá return para devolver el resultado.',
-    'Solución:\ndef saludar(nombre):\n    return "Hola, " + nombre',
-  ],
-  7: [
-    'Un diccionario usa llaves {}: {"clave": valor}',
-    'Separás los pares clave-valor con coma.',
-    'Solución:\npersona = {"nombre": "Ana", "edad": 25}',
-  ],
-  8: [
-    'La estructura es try: ... except TipoError:',
-    'El error que hay que capturar es ZeroDivisionError.',
-    'Solución:\ntry:\n    10/0\nexcept ZeroDivisionError:\n    print("Error: división por cero")',
-  ],
-  9: [
-    'La sintaxis es: [expresion for variable in iterable]',
-    'Para elevar al cuadrado usás: x**2',
-    'Solución: [x**2 for x in range(1, 6)]',
-  ],
-  10: [
-    'Definí la clase con: class Animal:',
-    'El __init__ siempre recibe self como primer parámetro.',
-    'Solución:\nclass Animal:\n    def __init__(self, nombre):\n        self.nombre = nombre',
-  ],
-};
+interface Pista { idPista: number; orden: number; texto: string; }
 
-// ── Iconos ─────────────────────────────────────────────────────
 const Icons = {
-  Play:    () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M8 5v14l11-7z"/></svg>,
-  Back:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><path d="M19 12H5m7-7-7 7 7 7"/></svg>,
-  Next:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>,
-  Check:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><polyline points="20 6 9 17 4 12"/></svg>,
-  X:       () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-  Reset:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
-  Hint:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>,
-  Spin:    () => <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>,
+  Play:  () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M8 5v14l11-7z"/></svg>,
+  Back:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><path d="M19 12H5m7-7-7 7 7 7"/></svg>,
+  Next:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>,
+  Check: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><polyline points="20 6 9 17 4 12"/></svg>,
+  X:     () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Reset: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
+  Hint:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>,
+  Spin:  () => <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>,
 };
 
 const CODIGO_INICIAL = `# Escribí tu solución acá\n`;
@@ -115,18 +59,20 @@ export default function EntornoCodigo() {
   const usuario = getUserFromToken();
   const id = Number(ejercicioId);
 
-  const [ejercicio, setEjercicio]               = useState<EjercicioBackend | null>(null);
-  const [todosEjercicios, setTodosEjercicios]   = useState<EjercicioBackend[]>([]);
-  const [completadosIds, setCompletadosIds]     = useState<Set<number>>(new Set());
-  const [codigo, setCodigo]                     = useState(CODIGO_INICIAL);
-  const [salida, setSalida]                 = useState('');
-  const [fase, setFase]                     = useState<Fase>('idle');
-  const [feedback, setFeedback]             = useState<{ ok: boolean; mensaje: string; stdout?: string } | null>(null);
-  const [yaCompletado, setYaCompletado]     = useState(false);
-  const [loading, setLoading]               = useState(true);
-  const [pistaIdx, setPistaIdx]             = useState(0);
-  const [mostrarPista, setMostrarPista]     = useState(false);
-  const [pistasUsadas, setPistasUsadas]     = useState(0);
+  const [ejercicio, setEjercicio]             = useState<EjercicioBackend | null>(null);
+  const [todosEjercicios, setTodosEjercicios] = useState<EjercicioBackend[]>([]);
+  const [completadosIds, setCompletadosIds]   = useState<Set<number>>(new Set());
+  const [codigo, setCodigo]                   = useState(CODIGO_INICIAL);
+  const [salida, setSalida]                   = useState('');
+  const [fase, setFase]                       = useState<Fase>('idle');
+  const [feedback, setFeedback]               = useState<{ ok: boolean; mensaje: string } | null>(null);
+  const [yaCompletado, setYaCompletado]       = useState(false);
+  const [loading, setLoading]                 = useState(true);
+
+  // Pistas desde el backend
+  const [pistas, setPistas]           = useState<Pista[]>([]);
+  const [pistaIdx, setPistaIdx]       = useState(0);
+  const [mostrarPista, setMostrarPista] = useState(false);
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
@@ -140,11 +86,10 @@ export default function EntornoCodigo() {
     if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
   }, [salida]);
 
-  // Resetear pistas al cambiar ejercicio
   useEffect(() => {
     setPistaIdx(0);
     setMostrarPista(false);
-    setPistasUsadas(0);
+    setPistas([]);
   }, [ejercicioId]);
 
   const cargarTodo = async () => {
@@ -156,7 +101,6 @@ export default function EntornoCodigo() {
       setFase('idle');
       setFeedback(null);
 
-      // Todo en paralelo de una sola vez
       const [resEjercicio, resEjercicios, resProg] = await Promise.all([
         ejerciciosService.getById(id),
         ejerciciosService.getAll(),
@@ -172,6 +116,14 @@ export default function EntornoCodigo() {
       setTodosEjercicios(resEjercicios.data ?? []);
       setCompletadosIds(ids);
       setYaCompletado(ids.has(id));
+
+      // Cargar pistas del backend
+      try {
+        const resPistas = await apiClient.get(`/ejercicios/${id}/pistas`);
+        setPistas(resPistas.data ?? []);
+      } catch {
+        setPistas([]);
+      }
     } catch {
       navigate('/dashboard');
     } finally {
@@ -179,14 +131,11 @@ export default function EntornoCodigo() {
     }
   };
 
-  const pistas = PISTAS[id] ?? [];
-
   const verSiguientePista = () => {
     setMostrarPista(true);
     if (pistaIdx < pistas.length - 1) {
       setPistaIdx(i => i + 1);
     }
-    setPistasUsadas(u => Math.min(u + 1, pistas.length));
   };
 
   const ejecutar = useCallback(async () => {
@@ -210,7 +159,7 @@ export default function EntornoCodigo() {
 
       if (!compilerData.passed) {
         setFase('error');
-        setFeedback({ ok: false, mensaje: compilerData.error ?? 'Error al ejecutar el código.', stdout });
+        setFeedback({ ok: false, mensaje: compilerData.error ?? 'Error al ejecutar el código.' });
         return;
       }
 
@@ -226,7 +175,7 @@ export default function EntornoCodigo() {
 
       const { esCorrecto, feedback: feedbackMsg } = resValidar.data;
       setFase(esCorrecto ? 'ok' : 'error');
-      setFeedback({ ok: esCorrecto, mensaje: feedbackMsg, stdout });
+      setFeedback({ ok: esCorrecto, mensaje: feedbackMsg });
 
       if (esCorrecto && !yaCompletado) {
         await progresoService.guardar({
@@ -245,12 +194,16 @@ export default function EntornoCodigo() {
     }
   }, [codigo, ejercicio, fase, id, usuario, yaCompletado]);
 
+  const ejerciciosNavegables = (() => {
+    if (!ejercicio) return [];
+    return todosEjercicios.filter(e => e.dificultad === ejercicio.dificultad);
+  })();
+
   const navegarEjercicio = (dir: 'anterior' | 'siguiente') => {
-    const lista = getEjerciciosDesbloqueados(todosEjercicios, completadosIds);
-    const idx = lista.findIndex(e => e.idEjercicio === id);
+    const idx = ejerciciosNavegables.findIndex(e => e.idEjercicio === id);
     const nuevoIdx = dir === 'anterior' ? idx - 1 : idx + 1;
-    if (nuevoIdx >= 0 && nuevoIdx < lista.length) {
-      navigate(`/ejercicios/${lista[nuevoIdx].idEjercicio}`);
+    if (nuevoIdx >= 0 && nuevoIdx < ejerciciosNavegables.length) {
+      navigate(`/ejercicios/${ejerciciosNavegables[nuevoIdx].idEjercicio}`);
     }
   };
 
@@ -276,14 +229,13 @@ export default function EntornoCodigo() {
 
   const cat = colorCategoria(ejercicio.categoria);
   const dif = colorDificultad(ejercicio.dificultad);
-  const ejerciciosNavegables = getEjerciciosDesbloqueados(todosEjercicios, completadosIds);
   const idxActual = ejerciciosNavegables.findIndex(e => e.idEjercicio === id);
   const terminalColor = fase === 'ok' ? '#10b981' : fase === 'error' ? '#f87171' : '#34d399';
 
   return (
     <div className="flex h-screen w-full overflow-hidden" style={{ fontFamily: "'Exo 2','Fira Code',monospace", background: '#050812' }}>
 
-      {/* ── Panel izquierdo ── */}
+      {/* Panel izquierdo */}
       <div className="w-[400px] flex-shrink-0 flex flex-col h-screen overflow-hidden"
         style={{ background: 'rgba(6,9,20,0.95)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
 
@@ -341,7 +293,6 @@ export default function EntornoCodigo() {
 
         {/* Descripción + pistas */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Descripción */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: cat.accent }}>
               📋 Descripción
@@ -351,15 +302,14 @@ export default function EntornoCodigo() {
             </p>
           </div>
 
-          {/* Instrucciones */}
           <div className="p-3 rounded-xl" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
             <p className="text-xs font-bold mb-1" style={{ color: '#60a5fa' }}>💡 ¿Cómo funciona?</p>
             <p className="text-xs" style={{ color: 'rgba(160,185,255,0.7)' }}>
-              Escribí tu código Python en el editor de la derecha y hacé clic en <strong style={{ color: '#fff' }}>Ejecutar Código</strong>. El sistema va a validar tu respuesta automáticamente.
+              Escribí tu código Python en el editor y hacé clic en <strong style={{ color: '#fff' }}>Ejecutar Código</strong>. El sistema valida tu respuesta automáticamente.
             </p>
           </div>
 
-          {/* Sección de pistas */}
+          {/* Pistas del backend */}
           {pistas.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -367,38 +317,28 @@ export default function EntornoCodigo() {
                   🔍 Pistas
                 </h3>
                 <span className="text-xs" style={{ color: 'rgba(160,185,255,0.4)' }}>
-                  {pistasUsadas}/{pistas.length} usadas
+                  {mostrarPista ? pistaIdx + 1 : 0}/{pistas.length} mostradas
                 </span>
               </div>
 
-              {/* Pista actual visible */}
               {mostrarPista && (
                 <div className="p-3 rounded-xl mb-2" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
                   <p className="text-xs font-bold mb-1" style={{ color: '#f59e0b' }}>
-                    Pista {pistaIdx + 1} de {pistas.length}
+                    Pista {pistas[pistaIdx]?.orden ?? pistaIdx + 1} de {pistas.length}
                   </p>
                   <p className="text-xs whitespace-pre-line leading-relaxed" style={{ color: 'rgba(255,220,130,0.9)' }}>
-                    {pistas[pistaIdx]}
+                    {pistas[pistaIdx]?.texto}
                   </p>
                 </div>
               )}
 
-              {/* Botón para ver pista */}
               <button
                 onClick={verSiguientePista}
                 disabled={mostrarPista && pistaIdx >= pistas.length - 1}
                 className="w-full py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{
-                  background: 'rgba(245,158,11,0.1)',
-                  color: '#f59e0b',
-                  border: '1px solid rgba(245,158,11,0.2)',
-                }}>
+                style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' }}>
                 <div className="w-3.5 h-3.5"><Icons.Hint /></div>
-                {!mostrarPista
-                  ? 'Ver primera pista'
-                  : pistaIdx < pistas.length - 1
-                    ? 'Ver siguiente pista'
-                    : 'No hay más pistas'}
+                {!mostrarPista ? 'Ver primera pista' : pistaIdx < pistas.length - 1 ? 'Ver siguiente pista' : 'No hay más pistas'}
               </button>
             </div>
           )}
@@ -419,9 +359,7 @@ export default function EntornoCodigo() {
               </div>
               <p className="leading-relaxed">{feedback.mensaje}</p>
               {!feedback.ok && pistas.length > 0 && (
-                <button onClick={verSiguientePista}
-                  className="mt-2 text-xs underline"
-                  style={{ color: '#f59e0b' }}>
+                <button onClick={verSiguientePista} className="mt-2 text-xs underline" style={{ color: '#f59e0b' }}>
                   Ver una pista →
                 </button>
               )}
@@ -441,9 +379,7 @@ export default function EntornoCodigo() {
               disabled={fase === 'ejecutando' || fase === 'validando'}
               className="flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
-                background: fase === 'ejecutando' || fase === 'validando'
-                  ? 'rgba(59,130,246,0.4)'
-                  : `linear-gradient(135deg,${cat.accent},${cat.accent}bb)`,
+                background: fase === 'ejecutando' || fase === 'validando' ? 'rgba(59,130,246,0.4)' : `linear-gradient(135deg,${cat.accent},${cat.accent}bb)`,
                 color: '#fff',
                 boxShadow: fase === 'ejecutando' || fase === 'validando' ? 'none' : `0 4px 16px ${cat.glow}`,
               }}>
@@ -463,9 +399,8 @@ export default function EntornoCodigo() {
         </div>
       </div>
 
-      {/* ── Panel derecho: Editor + Terminal ── */}
+      {/* Panel derecho */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Barra editor */}
         <div className="flex items-center justify-between px-4 py-2 flex-shrink-0"
           style={{ background: 'rgba(8,11,24,0.95)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-3">
@@ -488,7 +423,6 @@ export default function EntornoCodigo() {
           </div>
         </div>
 
-        {/* Monaco Editor */}
         <div className="flex-1 overflow-hidden">
           <Editor
             height="100%"
@@ -511,7 +445,6 @@ export default function EntornoCodigo() {
           />
         </div>
 
-        {/* Terminal */}
         <div className="h-44 flex-shrink-0 flex flex-col" style={{ background: '#020714', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center justify-between px-4 py-2 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="flex items-center gap-2">
